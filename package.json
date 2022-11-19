@@ -1,0 +1,29 @@
+{
+  "name": "webapp_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngodung312/WebApp_API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ngodung312/WebApp_API/issues"
+  },
+  "homepage": "https://github.com/ngodung312/WebApp_API#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "joi": "^17.7.0"
+  }
+  "engines": {
+    "node": "18.12.1",
+    "npm": "8.19.2"
+  }
+}
