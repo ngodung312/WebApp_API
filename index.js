@@ -1,74 +1,61 @@
 const express = require('express');
+const mysql = require('mysql');
 const Joi = require('joi');
 const app = express();
 
 app.use(express.json());
 
-const courses = [
-  {id: 1, name: 'course1'}, 
-  {id: 2, name: 'course2'}, 
-  {id: 3, name: 'course3'}, 
-]
+// PORT
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Listening on port ${port}...`));
+
+const db = mysql.createConnection({
+  host    : '217.21.74.51', 
+  user    : 'u289965850_dung', 
+  password: 'Dungbcu2022', 
+  database: 'u289965850_bcu_demo'
+});
+
+db.connect(function(err) {
+  if (err) throw err;
+  console.log("Database connected!");
+});
 
 app.get('/', (req, res) => {
   res.send("Hello World!");
 });
 
-app.get('/api/courses', (req, res) => {
-  res.send(courses);
-});
-
-app.get('/api/courses/:id', (req, res) => {
-  const course = courses.find(c => c.id === parseInt(req.params.id));
-  if (!course) return res.status(404).send('The course with the given ID was not found!');  
-  res.send(course);
-})
-
-app.post('/api/courses', (req, res) => {
-  const { error } = validateCourse(req.body); // get result.error
-  if (error) return res.status(400).send(error.details[0].message);
-
-  const course = {
-    id: courses.length + 1,
-    name: req.body.name
-  };
-  courses.push(course);
-  res.send(course);
-});
-
-app.put('/api/courses/:id', (req, res) => {
-  // Look up the course
-  const course = courses.find(c => c.id === parseInt(req.params.id));
-  if (!course) return res.status(404).send('The course with the given ID was not found!');  
-
-  // Validation
-  const { error } = validateCourse(req.body); // get result.error
-  if (error) return res.status(400).send(error.details[0].message);
-
-  // Update course 
-  course.name = req.body.name;
-  res.send(course);
-});
-
-app.delete('/api/courses/:id', (req, res) => {
-  // Look up the course 
-  const course = courses.find(c => c.id === parseInt(req.params.id));
-  if (!course) return res.status(404).send('The course with the given ID was not found!');  
-
-  // Delete
-  const index = courses.indexOf(course);
-  courses.splice(index, 1);
-
-  res.send(course);
-});
-
-function validateCourse(course) {
-  const schema = Joi.object({
-    name: Joi.string().min(3).required()
+app.get('/db/query', (req, res) => {
+  let sql = 'SELECT * FROM User';
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    console.log("Result: " + result);
+    res.send(`Command: ${sql};  Result: ${result}!`)
   });
-  return schema.validate(course);
+});
+
+app.post('/db/add-user', (req, res) => {
+  const { error } = validateNewUser(req.body); // get result.error
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const newUser = {
+    full_name: req.body.full_name, 
+    email_address: req.body.email_address 
+  }
+
+  let sql = `INSERT INTO User (full_name, email_address) VALUES ("${newUser['full_name']}","${newUser['email_address']}")`;
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    console.log("User added: ", result);
+    res.send(`New user has been added:\n${newUser.full_name}`);
+  });
+});
+
+function validateNewUser(user) {
+  const schema = Joi.object({
+    full_name: Joi.string().min(3).required(),
+    email_address: Joi.string().required().email({ tlds: { allow: false } })
+  });
+  return schema.validate(user);
 }
 
-// PORT
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Listening on port ${port}...`));

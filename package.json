@@ -20,7 +20,8 @@
   "homepage": "https://github.com/ngodung312/WebApp_API#readme",
   "dependencies": {
     "express": "^4.18.2",
-    "joi": "^17.7.0"
+    "joi": "^17.7.0",
+    "mysql": "^2.18.1"
   },
   "engines": {
     "node": "18.12.1",
