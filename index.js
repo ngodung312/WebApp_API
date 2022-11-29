@@ -9,17 +9,39 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
-const db = mysql.createConnection({
+// const db = mysql.createConnection({
+//   host    : 'localhost', 
+//   user    : 'root', 
+//   password: '', 
+//   database: 'demo_database'
+// });
+
+var pool  = mysql.createPool({
   host    : '217.21.74.51', 
   user    : 'u289965850_dung', 
   password: 'Dungbcu2022', 
   database: 'u289965850_bcu_demo'
 });
 
-db.connect(function(err) {
-  if (err) throw err;
-  console.log("Database connected!");
-});
+exports.getUsers = function(callback) {
+  pool.getConnection(function(err, connection) {
+    if(err) { 
+      console.log(err); 
+      callback(true); 
+      return; 
+    }
+    var sql = "SELECT * from User";
+    connection.query(sql, [], function(err, results) {
+      connection.release(); // always put connection back in pool after last query
+      if(err) { 
+        console.log(err); 
+        callback(true); 
+        return; 
+      }
+      callback(false, results);
+    });
+  });
+};
 
 app.get('/', (req, res) => {
   res.send("Hello World!");
@@ -27,7 +49,7 @@ app.get('/', (req, res) => {
 
 app.get('/db/query', (req, res) => {
   let sql = 'SELECT * FROM User';
-  db.query(sql, (err, result) => {
+  pool.query(sql, (err, result) => {
     if (err) throw err;
     console.log("Result: " + result);
     res.send(`Command: ${sql};  Result: ${result}!`)
@@ -44,7 +66,7 @@ app.post('/db/add-user', (req, res) => {
   }
 
   let sql = `INSERT INTO User (full_name, email_address) VALUES ("${newUser['full_name']}","${newUser['email_address']}")`;
-  db.query(sql, (err, result) => {
+  pool.query(sql, (err, result) => {
     if (err) throw err;
     console.log("User added: ", result);
     res.send(`New user has been added:\n${newUser.full_name}`);
